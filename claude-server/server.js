@@ -103,6 +103,10 @@ app.post('/chat', async (req, res) => {
   try {
     const response = query({
       prompt: prompt,
+      options: {
+        cwd: WORKING_DIR,
+        permissionMode: 'bypassPermissions'
+      }
     });
 
     for await (const chunk of response) {
