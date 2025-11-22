@@ -3,6 +3,7 @@ const { query } = require('@anthropic-ai/claude-agent-sdk');
 const app = express();
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 const PORT = process.env.CLAUDE_PORT || 4000;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
