@@ -1,9 +1,10 @@
 const express = require('express');
 const { query } = require('@anthropic-ai/claude-agent-sdk');
 const app = express();
+app.use(express.json());
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config( { path: path.join(__dirname, '.env') } );
 
 const PORT = process.env.CLAUDE_PORT || 4000;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -75,6 +76,44 @@ app.get('/logs', (req, res) => {
     watcher.close();
     res.end();
   });
+});
+
+app.post('/chat', async (req, res) => {
+  const { messages } = req.body;
+
+  if (!messages || !Array.isArray(messages)) {
+    res.status(400).json({ error: 'Invalid messages format' });
+    return;
+  }
+
+  // Get the last user message
+  const lastUserMessage = messages.filter(msg => msg.role === 'user').pop();
+  const prompt = lastUserMessage?.content || '';
+
+  if (!prompt) {
+    res.status(400).json({ error: 'Prompt is required' });
+    return;
+  }
+
+  if (!ANTHROPIC_API_KEY) {
+    res.status(400).json({ error: 'ANTHROPIC_API_KEY is not set' });
+    return;
+  }
+
+  try {
+    const response = query({
+      prompt: prompt,
+    });
+
+    for await (const chunk of response) {
+      res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+      logStream.write(`${JSON.stringify(chunk)}\n`);
+    }
+    res.end();
+  } catch (error) {
+    res.write(`data: "Error: ${error.message}"\n\n`);
+    res.end();
+  }
 });
 
 app.listen(PORT, () => {
