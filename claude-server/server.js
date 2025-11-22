@@ -6,7 +6,7 @@ const fs = require('fs');
 const PORT = process.env.CLAUDE_PORT || 4000;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const WORKING_DIR = path.join(__dirname, '');
-const LOG_FILE = '/tmp/claude-agent.log';
+const LOG_FILE = path.join(__dirname, 'claude-agent.log');
 const logStream = fsSync.createWriteStream(LOG_FILE, { flags: 'a' });
 
 app.get('/health', (req, res) => {
